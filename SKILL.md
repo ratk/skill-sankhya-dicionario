@@ -55,13 +55,13 @@ Metamodelo:           TDDTAB, TDDCAM, TDDINS, TDDOPC, TDDLIG, TDDLGC
 ## Relacionamentos Centrais
 
 ```
-TGFPAR (parceiro) ─────────────────────────────────┐
+TGFPAR (parceiro) ──────────────────────────────────┐
 TSIEMP (empresa) ──────────────────────────────┐    │
 TGFTOP (tipo operação) ─────────────────────┐  │    │
-                                              │  │    │
+                                            │  │    │
 TGFCAB (cabeçalho nota)  ←── CODEMP ────────┘  │    │
-                          ←── CODPARC ──────────┘────┘
-                          ←── CODTIPOPER ───────────────→ TGFTOP
+                          ←── CODPARC ─────────┘────┘
+                          ←── CODTIPOPER ─────────────→ TGFTOP
                           ←── CODVEND ────────────────→ TGFVEN
                           │
                           └──→ TGFITE (itens)
@@ -152,4 +152,8 @@ Ao responder perguntas sobre estrutura do banco Sankhya:
 | Sistema/configuração (TSIUSU, TSIEMP, TSICID, TSIBCO, TSIBAI...) | `references/tabelas-tsi.md` |
 | Tabelas TGF core (TGFPAR, TGFPRO, TGFCAB, TGFITE, TGFFIN, TGFEMP...) | `references/tabelas-tgf-core.md` |
 | Tabelas TGF complementares (fiscal, MDF-e, NF-e, comissões, tarefas...) | `references/tabelas-tgf-outros.md` |
+| Tabelas filhas/lookup de TGFCAB, TGFITE e TGFPAR (TGFICM, TGFTPP, TSIMOE...) | `references/tabelas-relacionadas.md` |
+| TCS (CRM/OS/Contratos/Projetos) e TCB (Contabilidade/Plano de Contas) | `references/tabelas-tcs-tcb.md` |
+| TGW (WMS/Armazém) e TIM (Imobiliário) | `references/tabelas-tgw-tim.md` |
+| TPR (Produção/Manufatura), TRI (EFD-REINF) e TGA (Agronegócio) | `references/tabelas-tpr-tri-tga.md` |
 | Ligações lógicas TDDLIG + instâncias TDDINS + campos TDDLGC (entityNames para JapeFactory) | `references/tabelas-ligacoes.md` |
