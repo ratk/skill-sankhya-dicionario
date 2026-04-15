@@ -157,3 +157,4 @@ Ao responder perguntas sobre estrutura do banco Sankhya:
 | TGW (WMS/Armazém) e TIM (Imobiliário) | `references/tabelas-tgw-tim.md` |
 | TPR (Produção/Manufatura), TRI (EFD-REINF) e TGA (Agronegócio) | `references/tabelas-tpr-tri-tga.md` |
 | Ligações lógicas TDDLIG + instâncias TDDINS + campos TDDLGC (entityNames para JapeFactory) | `references/tabelas-ligacoes.md` |
+| Folha de Pagamento e RH (TFPFUN, TFPFOL, TFPCAR, TFPDEP, TFPFER, TFPPON...) | `references/tabelas-tfp.md` |

@@ -1,10 +1,10 @@
-# CONTEXT — Próximas Evoluções da Skill sankhya-dicionario
+# CONTEXT — Estado da Skill sankhya-dicionario
 
 ## Estado Atual (2026-04-14)
 
 **Cobertura:**
-- ~450+ tabelas mapeadas
-- 9 arquivos de referência (~633KB total)
+- ~730+ tabelas mapeadas
+- 10 arquivos de referência (~885KB total)
 - Fontes: TDDTAB, TDDCAM, TDDOPC, ALL_CONSTRAINTS, TDDINS, TDDLIG, TDDLGC
 
 **Arquivos gerados:**
@@ -18,57 +18,44 @@
 | `tabelas-relacionadas.md` | Filhas/lookups de TGFCAB, TGFITE, TGFPAR | 39KB |
 | `tabelas-tcs-tcb.md` | TCS (CRM/OS/Contratos) + TCB (Contabilidade) | 42KB |
 | `tabelas-tgw-tim.md` | TGW (WMS) + TIM (Imobiliário) | 59KB |
-| `tabelas-tpr-tri-tga.md` | TPR (Produção) + TRI (REINF) + TGA (Agro) | 54KB |
+| `tabelas-tpr-tri-tga.md` | TPR (Produção) + TRI (REINF) + TGA (Agro) + TSE (Serasa) | 54KB |
 | `tabelas-ligacoes.md` | TDDLIG + TDDINS + TDDLGC (entityNames) | 100KB |
+| `tabelas-tfp.md` | TFP (Folha de Pagamento / RH) — 265 tabelas | 252KB |
 
-**Prefixos cobertos:** TDD, TSI, TGF, TCS, TCB, TGW, TGC, TIM, TPR, TRI, TGA, TSE
+**Prefixos cobertos:** TDD, TSI, TGF, TCS, TCB, TGW, TGC, TIM, TPR, TRI, TGA, TSE, **TFP**
 
 ---
 
 ## Pendentes / Próximas Adições
 
-### Prefixos ainda sem cobertura
+### Prefixos sem cobertura (confirmados com baixa/nula presença no TDDCAM)
 
-| Prefixo | Qtd | Domínio estimado |
+| Prefixo | Qtd TDDTAB | Status |
 |---|---|---|
-| `TFP*` | 748 | Folha de Pagamento / Pessoal (TFPFUN, TFPFOL, TFPCAB...) |
-| `TRD*` | 184 | Relatórios e BI — apenas TRDEAC e TRDBLC no dicionário |
-| `CMD*` | 46 | Poucos dados no TDDCAM neste banco |
+| `TRD*` | 2 | Apenas TRDEAC e TRDBLC no dicionário — geradas dinamicamente |
+| `CMD*` | 0 | Nenhuma tabela no TDDTAB neste banco |
 
-### Tabelas relacionadas ainda não mapeadas
+### Tabelas relacionadas ainda não mapeadas com ligações completas
 
-Ainda faltam as ligações de:
-- `TGFFIN` (Financeiro) → TSICTA, TGFTIT, TGFNAT como lookups
+- `TGFFIN` (Financeiro) → TSICTA, TGFTIT, TGFNAT como lookups — ligações em `tabelas-ligacoes.md` mas sem seções detalhadas
 - `TGFPRO` (Produto) → grupos, famílias, séries, unidades
 - `TGFTOP` (Tipo de Operação) → tributação, CFOP, alíquotas
-
-### TFP (Folha de Pagamento) — prioridade se necessário
-
-Tabelas chave do módulo pessoal:
-- `TFPFUN` — Funcionários (entidade central)
-- `TFPFOL` — Eventos da Folha
-- `TFPCAB` — Cabeçalho do eSocial
-- `TFPEVE` — Eventos
-- `TFPDEP` — Departamentos
-- `TFPLOT` — Lotações
-- `TFPCAR` — Cargos
-- `TFPHOR` — Carga Horária
-- `TFPFER` — Férias
-- `TFPPON` — Ponto
 
 ---
 
 ## Processo de Atualização
 
 ```bash
-# Para adicionar TFP ou outros prefixos:
-# 1. Adicionar prefixo nas queries de extract_and_generate.sh
-# 2. Adicionar arquivo de saída em gen_skill.py
-# 3. Rodar:
+# Para re-extrair tudo (TGF/TSI/TDD):
 bash ~/.claude/skills/sankhya-dicionario/scripts/extract_and_generate.sh
 
-# Para geração incremental (sem re-extrair):
-python3 /tmp/gen_novos.py   # script reutilizável
+# Para regenerar TFP:
+# 1. Rodar as queries de extração TFP no docker:
+docker exec wildfly-docker-sankhya-skdev-oracle-addon-1 bash -c "..." > /tmp/sk_tables_tfp.txt
+# (ver queries em /tmp/gen_tfp.py — seção de extração)
+
+# 2. Gerar o arquivo:
+python3 /tmp/gen_tfp.py
 ```
 
 ---
@@ -80,4 +67,5 @@ python3 /tmp/gen_novos.py   # script reutilizável
 - **Python oracledb:** thin mode não suporta esta versão Oracle. Usar sqlplus via `docker exec`.
 - **TDDCAM.SISTEMA:** não usar como filtro — retorna 0 neste banco.
 - **TRD*:** apenas 2 tabelas no dicionário (TRDEAC, TRDBLC) — provavelmente geradas dinamicamente.
-- **CMD*:** baixa cobertura no TDDCAM — módulo pode não ter metadados registrados.
+- **CMD*:** nenhuma tabela no TDDTAB neste banco — módulo provavelmente não instalado.
+- **TFP — `tabelas-tfp.md`:** 252KB com 265 tabelas. 21 prioritárias com até 80 campos, 244 complementares com até 40 campos.

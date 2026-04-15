@@ -4,13 +4,22 @@ Conhecimento avançado sobre o **dicionário de dados do Sankhya OM** extraído 
 
 ## O que cobre
 
-- **199 tabelas** mapeadas com campos, descrições, PKs, FKs e opções de campos
-- **~13.000 campos** com descrições do próprio dicionário Sankhya (`TDDCAM`)
+- **~730 tabelas** mapeadas com campos, descrições, PKs, FKs e opções de campos
 - Tabelas **TDD\*** — metamodelo interno (14 tabelas)
 - Tabelas **TSI\*** — sistema/configuração (50 tabelas)
-- Tabelas **TGF\*** — backoffice comercial/fiscal/financeiro (135 tabelas)
+- Tabelas **TGF\*** — backoffice comercial/fiscal/financeiro (135 tabelas core + outros)
+- Tabelas **TFP\*** — Folha de Pagamento / RH (265 tabelas)
+- Tabelas **TCS\*** — CRM, OS, Contratos, Projetos
+- Tabelas **TCB\*** — Contabilidade / Plano de Contas
+- Tabelas **TGW\*** — WMS / Gestão de Armazém
+- Tabelas **TIM\*** — Imobiliário
+- Tabelas **TPR\*** — Produção / Manufatura
+- Tabelas **TRI\*** — EFD-REINF
+- Tabelas **TGA\*** — Agronegócio
+- Tabelas **TSE\*** — Serasa / Bureau de Crédito
 - Relacionamentos completos entre tabelas (chaves estrangeiras reais do banco)
 - Enums/opções de campos (valores válidos para campos como `TIPMOV`, `RECDESP`, `CONFIRMADA`, etc.)
+- Ligações lógicas (`TDDLIG`) e `entityName` para uso em `JapeFactory.dao()`
 
 ## Como foi gerada
 
@@ -19,10 +28,13 @@ A skill foi criada via extração direta do banco Oracle Sankhya OM (`SKCONTAINE
 | Fonte | Conteúdo |
 |---|---|
 | `TDDTAB` | Descrições de 3.119 tabelas do sistema |
-| `TDDCAM` | Descrições de 42.076 campos (tipo, tamanho, ordem) |
-| `TDDOPC` + `TDDCAM` | 9.481 opções de campos (enums do sistema) |
-| `ALL_CONS_COLUMNS` | 4.712 colunas de chaves primárias |
-| `ALL_CONSTRAINTS` | 2.132 relacionamentos FK entre tabelas |
+| `TDDCAM` | Descrições de 42.076+ campos (tipo, tamanho, ordem) |
+| `TDDOPC` + `TDDCAM` | Opções de campos (enums do sistema) |
+| `TDDINS` | 1.636 instâncias com entityNames para JapeFactory |
+| `TDDLIG` | 3.352 ligações lógicas entre instâncias |
+| `TDDLGC` | 4.407 pares de campos de join |
+| `ALL_CONS_COLUMNS` | Colunas de chaves primárias |
+| `ALL_CONSTRAINTS` | Relacionamentos FK entre tabelas |
 
 **Data da extração:** 2026-04-14  
 **Banco:** Oracle XE — `localhost:1521` / schema `SKCONTAINER`  
@@ -32,14 +44,26 @@ A skill foi criada via extração direta do banco Oracle Sankhya OM (`SKCONTAINE
 
 ```
 sankhya-dicionario/
-├── SKILL.md                          ← Skill principal (carregada automaticamente)
-├── README.md                         ← Esta documentação
+├── SKILL.md                           ← Skill principal (carregada automaticamente)
+├── README.md                          ← Esta documentação
+├── CONTEXT.md                         ← Estado atual e próximos passos
+├── scripts/
+│   ├── extract_and_generate.sh        ← Script de re-extração completa
+│   └── gen_skill.py                   ← Gerador dos arquivos de referência
 └── references/
-    ├── tabelas-tdd.md               ← 14 tabelas TDD (metamodelo interno)
-    ├── tabelas-tsi.md               ← 50 tabelas TSI (sistema/configuração)
-    ├── tabelas-tgf-core.md          ← 22 tabelas TGF core (71KB)
-    └── tabelas-tgf-outros.md        ← 113 tabelas TGF complementares (95KB)
+    ├── tabelas-tdd.md                 ← 14 tabelas TDD (metamodelo interno) — 23KB
+    ├── tabelas-tsi.md                 ← 50 tabelas TSI (sistema/configuração) — 48KB
+    ├── tabelas-tgf-core.md            ← 22 tabelas TGF core — 72KB
+    ├── tabelas-tgf-outros.md          ← 113 tabelas TGF complementares — 96KB
+    ├── tabelas-relacionadas.md        ← Filhas/lookups de TGFCAB, TGFITE, TGFPAR — 40KB
+    ├── tabelas-tcs-tcb.md             ← TCS (CRM/OS) + TCB (Contabilidade) — 43KB
+    ├── tabelas-tgw-tim.md             ← TGW (WMS) + TIM (Imobiliário) — 60KB
+    ├── tabelas-tpr-tri-tga.md         ← TPR (Produção) + TRI (REINF) + TGA (Agro) + TSE — 55KB
+    ├── tabelas-ligacoes.md            ← TDDLIG + TDDINS + TDDLGC (entityNames) — 100KB
+    └── tabelas-tfp.md                 ← 265 tabelas TFP (Folha de Pagamento / RH) — 252KB
 ```
+
+**Total references:** ~800KB
 
 ## Tabelas Mais Importantes por Categoria
 
@@ -92,6 +116,24 @@ sankhya-dicionario/
 | `TSIGRU` | Grupos de usuários | `CODGRUPO` | — |
 | `TSIPAR` | Parâmetros do sistema | — | — |
 
+### Folha de Pagamento (TFP)
+| Tabela | Descrição | PK |
+|---|---|---|
+| `TFPFUN` | Funcionários | `CODFUNC` |
+| `TFPFOL` | Eventos da Folha | — |
+| `TFPDEP` | Departamentos | `CODDEP` |
+| `TFPCAR` | Cargos | `CODCAR` |
+| `TFPLOT` | Lotações | `CODLOT` |
+| `TFPHOR` | Carga Horária / Horários | `CODHOR` |
+| `TFPFER` | Férias | — |
+| `TFPPON` | Ponto | — |
+| `TFPEVE` | Eventos | `CODEVE` |
+| `TFPSIN` | Sindicatos | `CODSIN` |
+| `TFPAFA` | Afastamentos | — |
+| `TFPASO` | Atestado de Saúde Ocupacional | — |
+| `TFPCAT` | CAT | — |
+| `TFPAUD` | Auditoria E-Social | — |
+
 ### Metamodelo (TDD)
 | Tabela | Descrição |
 |---|---|
@@ -110,19 +152,21 @@ sankhya-dicionario/
 | `TDDPRE` | Preferências |
 | `TDDEXP` | Exportações |
 
+## Prefixos NÃO cobertos
+
+| Prefixo | Motivo |
+|---|---|
+| `TRD*` | Apenas 2 tabelas no TDDCAM (TRDEAC, TRDBLC) — geradas dinamicamente |
+| `CMD*` | Nenhuma tabela no TDDTAB neste banco — módulo não instalado |
+
 ## Como Atualizar
 
-Para regenerar a skill com dados mais recentes do banco:
-
 ```bash
-# 1. Extrair dados
-bash /tmp/extract_sankhya.sh  # (ou rodar as queries manualmente)
+# Re-extração completa (TGF, TSI, TDD):
+bash ~/.claude/skills/sankhya-dicionario/scripts/extract_and_generate.sh
 
-# 2. Processar e gerar arquivos
-python3 /tmp/gen_skill.py
-
-# 3. Recriar SKILL.md e README.md se necessário
+# Re-extração TFP:
+# Os scripts de extração estão documentados em /tmp/gen_tfp.py
+# Conexão: SKCONTAINER/tecsis@localhost:1521/XE
+# Container: wildfly-docker-sankhya-skdev-oracle-addon-1
 ```
-
-Os scripts de extração estão documentados no histórico do projeto.
-Conexão: `SKCONTAINER/tecsis@localhost:1521/XE` via `docker exec wildfly-docker-sankhya-skdev-oracle-addon-1`
