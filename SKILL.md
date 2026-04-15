@@ -216,6 +216,26 @@ Ver `README.md` para detalhes completos de cobertura e fontes de extração.
 
 ---
 
+## Uso por Outras Skills Sankhya
+
+Esta skill é o repositório central de estrutura do banco Sankhya OM. As demais skills do
+ecossistema devem consultá-la sempre que precisarem de:
+
+- Campos de uma tabela (nomes, tipos, tamanhos, ordem)
+- PKs, FKs e relacionamentos entre tabelas
+- Opções de campos (enums via TDDOPC)
+- `entityName` para uso em `JapeFactory.dao()`
+- Validação de existência de tabelas ou campos antes de gerar código ou queries
+
+**Skills que devem usar sankhya-dicionario como fonte primária:**
+- **`sankhya-addon`** — campos de `<nativeTable>`, entityNames, validação de tabelas nativas
+- **`sankhya-modulo-java`** — estrutura de entidades, campos TGFCAB/TGFITE/TGFFIN/TGFPAR
+- **`sankhya-bi`** — validação de campos nas queries SQL dos gadgets antes de gerar XML
+- **`sankhya-analisador-requisitos`** — validação de entidades e campos Sankhya citados no escopo
+- **`gerar-doc-entrega-dev`** — nomes corretos de campos persistidos ao documentar entregas
+
+---
+
 ## Referências
 
 | Conteúdo | Arquivo |
