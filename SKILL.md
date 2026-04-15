@@ -1,15 +1,14 @@
 ---
 name: sankhya-dicionario
 description: >
-  Conhecimento avançado sobre o dicionário de dados do Sankhya OM: tabelas TDD* (metamodelo
-  interno), TSI* (sistema/configuração) e TGF* (backoffice comercial/fiscal/financeiro).
-  Acionar quando o usuário perguntar sobre estrutura de tabelas Sankhya, campos de TGFCAB,
-  TGFPAR, TGFPRO, TGFFIN, TGFITE, TGFEST, TGFTOP, TGFNAT, TGFVEN, TSIUSU, TSIEMP, TSICID,
-  TSIBCO, relacionamentos entre tabelas, chaves primárias e estrangeiras, significado de campos,
-  opções de campos (enums), metamodelo TDDTAB/TDDCAM, dicionário de dados Sankhya,
-  "qual tabela armazena X", "quais campos tem Y", "como relacionar A com B",
-  "tabelas mais utilizadas", "estrutura do banco Sankhya", "campos adicionais AD_".
-version: 1.0.0
+  Esta skill deve ser utilizada quando o usuário perguntar sobre estrutura de tabelas Sankhya,
+  campos de TGFCAB, TGFPAR, TGFPRO, TGFFIN, TGFITE, TGFEST, TGFTOP, TGFNAT, TGFVEN, TSIUSU,
+  TSIEMP, TSICID, TSIBCO, relacionamentos entre tabelas, chaves primárias e estrangeiras,
+  significado de campos, opções de campos (enums), metamodelo TDDTAB/TDDCAM, dicionário de dados
+  Sankhya, "qual tabela armazena X", "quais campos tem Y", "como relacionar A com B",
+  "tabelas mais utilizadas", "estrutura do banco Sankhya", "campos adicionais AD_",
+  "entityName para JapeFactory", "qual entityName usar", "ligações TDDLIG".
+version: 1.1.0
 ---
 
 # Dicionário de Dados Sankhya OM
@@ -17,9 +16,8 @@ version: 1.0.0
 Especialidade: estrutura interna do banco de dados Sankhya OM — tabelas, campos,
 relacionamentos, PKs, FKs, enums e metamodelo.
 
-**Base de conhecimento:** extraída diretamente do banco Oracle de produção via
-`TDDTAB` (descrições de tabelas) e `TDDCAM` (descrições de campos) — 199 tabelas,
-~13.000 campos mapeados.
+**Base de conhecimento:** extraída diretamente do banco Oracle via `TDDTAB`, `TDDCAM`,
+`TDDOPC`, `TDDINS`, `TDDLIG`, `TDDLGC` e `ALL_CONSTRAINTS` — ~730 tabelas, ~42.000 campos mapeados.
 
 ---
 
@@ -27,16 +25,20 @@ relacionamentos, PKs, FKs, enums e metamodelo.
 
 ### Prefixos das Tabelas
 
-| Prefixo | Domínio | Qtd |
+| Prefixo | Domínio | Qtd aprox. |
 |---|---|---|
-| `TGF*` | Gestão Fiscal / Backoffice (comercial, financeiro, fiscal) | ~1.437 |
-| `TFP*` | Folha de Pagamento / Pessoal | ~748 |
-| `TSI*` | Sistema / Configuração (usuários, empresas, cidades, bancos) | ~240 |
-| `TDD*` | Dicionário de Dados (metamodelo interno Sankhya) | ~197 |
-| `TRD*` | Relatórios e BI | ~184 |
-| `TIM*` | (módulo específico) | ~147 |
-| `TCS*` | CRM / Contratos / Serviços / Projetos | ~133 |
-| `TGW*` | WMS — Gestão de Armazém | ~135 |
+| `TGF*` | Gestão Fiscal / Backoffice (comercial, financeiro, fiscal) | ~135+ |
+| `TFP*` | Folha de Pagamento / Pessoal e RH | ~265 |
+| `TSI*` | Sistema / Configuração (usuários, empresas, cidades, bancos) | ~50 |
+| `TDD*` | Dicionário de Dados (metamodelo interno Sankhya) | ~14 |
+| `TCS*` | CRM / Ordens de Serviço / Contratos / Projetos | — |
+| `TCB*` | Contabilidade / Plano de Contas | — |
+| `TGW*` | WMS — Gestão de Armazém | — |
+| `TIM*` | Imobiliário | — |
+| `TPR*` | Produção / Manufatura | — |
+| `TRI*` | EFD-REINF | — |
+| `TGA*` | Agronegócio | — |
+| `TSE*` | Serasa / Bureau de Crédito | — |
 | `AD_*` | Campos/tabelas adicionais (customizações) | — |
 
 ### Camadas de Importância
@@ -107,7 +109,7 @@ TSIUSU (usuário):  CODUSU → referenciado em TGFCAB.CODUSU, TGFITE, TGFFIN etc
 ### Padrão de Flags S/N
 
 A maioria dos campos booleanos usa `VARCHAR2(1)` com valores `'S'` (sim) e `'N'` (não).
-Em `DynamicVO`, esses campos podem ser lidos com `vo.asBoolean("CAMPO")` ou como String.
+Em `DynamicVO`, ler com `vo.asBoolean("CAMPO")` ou como String direta.
 
 ### Campos Adicionais (AD_)
 
@@ -121,26 +123,96 @@ Prefixo `AD_` é **reservado pelo Sankhya** — addons devem usar prefixo própr
 
 ## Metamodelo TDD — Como Consultar
 
-O próprio Sankhya armazena seu dicionário nas tabelas TDD. Útil para:
-- Listar campos de uma tabela: `SELECT * FROM TDDCAM WHERE NOMETAB = 'TGFCAB' ORDER BY ORDEM`
-- Obter descrição de tabela: `SELECT DESCRTAB FROM TDDTAB WHERE NOMETAB = 'TGFCAB'`
-- Ver opções de um campo: `SELECT o.VALOR, o.OPCAO FROM TDDOPC o JOIN TDDCAM c ON c.NUCAMPO=o.NUCAMPO WHERE c.NOMETAB='TGFCAB' AND c.NOMECAMPO='TIPMOV'`
-- Ver relacionamentos: `SELECT * FROM TDDLIG WHERE NOMETAB = 'TGFCAB'`
+O próprio Sankhya armazena seu dicionário nas tabelas TDD. Consultas úteis:
+
+```sql
+-- Listar campos de uma tabela
+SELECT NOMECAMPO, TIPCAMPO, TAMANHO, DESCRCAMPO
+FROM TDDCAM WHERE NOMETAB = 'TGFCAB' ORDER BY ORDEM;
+
+-- Descrição de uma tabela
+SELECT DESCRTAB FROM TDDTAB WHERE NOMETAB = 'TGFCAB';
+
+-- Opções de um campo (enum)
+SELECT o.VALOR, o.OPCAO
+FROM TDDOPC o JOIN TDDCAM c ON c.NUCAMPO = o.NUCAMPO
+WHERE c.NOMETAB = 'TGFCAB' AND c.NOMECAMPO = 'TIPMOV';
+
+-- Relacionamentos de uma tabela
+SELECT * FROM TDDLIG WHERE NOMETAB = 'TGFCAB';
+```
+
+Para consultas em tempo real no banco Oracle local, usar o script `scripts/consultar-oracle.sh`.
 
 ---
 
-## Como Usar Esta Skill
+## Guia de Navegação — Qual Arquivo Abrir
 
-Ao responder perguntas sobre estrutura do banco Sankhya:
+| Pergunta do usuário | Arquivo a consultar |
+|---|---|
+| "Qual tabela armazena X?" (backoffice) | `references/tabelas-tgf-core.md` + `references/tabelas-tgf-outros.md` |
+| "Quais campos tem TGFCAB/TGFPAR/TGFPRO?" | `references/tabelas-tgf-core.md` |
+| "Como relacionar parceiro com nota?" | TGFCAB.CODPARC → TGFPAR.CODPARC (diagrama acima) |
+| "O que é TDDCAM / TDDTAB?" | `references/tabelas-tdd.md` |
+| "Quais opções o campo TIPMOV aceita?" | `references/tabelas-tgf-core.md` seção TGFCAB |
+| "Quais tabelas TGF existem além das core?" | `references/tabelas-tgf-outros.md` |
+| "Qual entityName usar no JapeFactory?" | `references/tabelas-ligacoes.md` |
+| "Tabelas de usuário, empresa, cidade, banco" | `references/tabelas-tsi.md` |
+| "Tabelas de folha de pagamento / RH" | `references/tabelas-tfp.md` |
+| "CRM, OS, contratos, projetos" | `references/tabelas-tcs-tcb.md` |
+| "Contabilidade, plano de contas" | `references/tabelas-tcs-tcb.md` |
+| "WMS, armazém, endereçamento" | `references/tabelas-tgw-tim.md` |
+| "Produção, manufatura, ordens de produção" | `references/tabelas-tpr-tri-tga.md` |
+| "Filhas/lookups de TGFCAB, TGFITE, TGFPAR" | `references/tabelas-relacionadas.md` |
 
-1. **"Qual tabela armazena X?"** → Consultar `references/tabelas-tgf-core.md` e `references/tabelas-tsi.md`
-2. **"Quais campos tem TGFCAB?"** → `references/tabelas-tgf-core.md` seção TGFCAB
-3. **"Como relacionar parceiro com nota?"** → TGFCAB.CODPARC → TGFPAR.CODPARC
-4. **"O que é TDDCAM?"** → `references/tabelas-tdd.md`
-5. **"Quais opções o campo TIPMOV aceita?"** → Opções da seção TGFCAB em tabelas-tgf-core.md
-6. **"Quais tabelas TGF existem?"** → `references/tabelas-tgf-outros.md` (catálogo)
-7. **"Qual entityName usar no JapeFactory para X?"** → `references/tabelas-ligacoes.md`
-8. **"Como TGFCAB se liga a TGFPAR logicamente?"** → `references/tabelas-ligacoes.md` seção TGFCAB
+### Padrões de Grep para Arquivos Grandes
+
+Os arquivos abaixo excedem 10k palavras. Para localizar uma tabela específica sem carregar
+o arquivo inteiro, usar o Grep antes de ler:
+
+```
+# Em tabelas-tfp.md (45k palavras — 265 tabelas TFP):
+grep -n "^## TFPFUN\|^## TFPFOL\|^## TFPCAR" references/tabelas-tfp.md
+
+# Em tabelas-tgf-outros.md (16k palavras — 113 tabelas TGF):
+grep -n "^## TGFICM\|^## TGFISS\|^## NOME_TABELA" references/tabelas-tgf-outros.md
+
+# Em tabelas-ligacoes.md (15k palavras — entityNames):
+grep -n "entityName\|^## TGFCAB\|JapeFactory" references/tabelas-ligacoes.md
+
+# Em tabelas-tgf-core.md (12k palavras — tabelas core):
+grep -n "^## TGF\|^### TGF\|CODPARC\|NUNOTA" references/tabelas-tgf-core.md
+```
+
+---
+
+## Consulta ao Banco Oracle em Tempo Real
+
+Para tabelas não cobertas pelos arquivos de referência ou para dados frescos:
+
+```bash
+# Buscar campos de qualquer tabela diretamente no Oracle
+bash ~/.claude/skills/sankhya-dicionario/scripts/consultar-oracle.sh TGFCAB
+
+# Buscar opções de um campo
+bash ~/.claude/skills/sankhya-dicionario/scripts/consultar-oracle.sh TGFCAB TIPMOV
+```
+
+O script conecta via `docker exec` no container `wildfly-docker-sankhya-skdev-oracle-addon-1`.
+
+---
+
+## Manutenção — Como Regenerar o Dicionário
+
+```bash
+# Re-extração completa (TGF, TSI, TDD, TCS, TCB, TGW, TIM, TPR, TRI, TGA, TSE):
+bash ~/.claude/skills/sankhya-dicionario/scripts/extract_and_generate.sh
+
+# Conexão Oracle: SKCONTAINER/tecsis@localhost:1521/XE
+# Container: wildfly-docker-sankhya-skdev-oracle-addon-1
+```
+
+Ver `README.md` para detalhes completos de cobertura e fontes de extração.
 
 ---
 
@@ -148,13 +220,13 @@ Ao responder perguntas sobre estrutura do banco Sankhya:
 
 | Conteúdo | Arquivo |
 |---|---|
-| Metamodelo interno (TDDTAB, TDDCAM, TDDINS, TDDOPC, TDDLIG...) + mapa de instâncias | `references/tabelas-tdd.md` |
+| Metamodelo interno (TDDTAB, TDDCAM, TDDINS, TDDOPC, TDDLIG...) + instâncias | `references/tabelas-tdd.md` |
 | Sistema/configuração (TSIUSU, TSIEMP, TSICID, TSIBCO, TSIBAI...) | `references/tabelas-tsi.md` |
-| Tabelas TGF core (TGFPAR, TGFPRO, TGFCAB, TGFITE, TGFFIN, TGFEMP...) | `references/tabelas-tgf-core.md` |
-| Tabelas TGF complementares (fiscal, MDF-e, NF-e, comissões, tarefas...) | `references/tabelas-tgf-outros.md` |
-| Tabelas filhas/lookup de TGFCAB, TGFITE e TGFPAR (TGFICM, TGFTPP, TSIMOE...) | `references/tabelas-relacionadas.md` |
+| TGF core (TGFPAR, TGFPRO, TGFCAB, TGFITE, TGFFIN, TGFEMP...) | `references/tabelas-tgf-core.md` |
+| TGF complementares (fiscal, MDF-e, NF-e, comissões, tarefas...) | `references/tabelas-tgf-outros.md` |
+| Filhas/lookup de TGFCAB, TGFITE e TGFPAR (TGFICM, TGFTPP, TSIMOE...) | `references/tabelas-relacionadas.md` |
 | TCS (CRM/OS/Contratos/Projetos) e TCB (Contabilidade/Plano de Contas) | `references/tabelas-tcs-tcb.md` |
 | TGW (WMS/Armazém) e TIM (Imobiliário) | `references/tabelas-tgw-tim.md` |
-| TPR (Produção/Manufatura), TRI (EFD-REINF) e TGA (Agronegócio) | `references/tabelas-tpr-tri-tga.md` |
-| Ligações lógicas TDDLIG + instâncias TDDINS + campos TDDLGC (entityNames para JapeFactory) | `references/tabelas-ligacoes.md` |
+| TPR (Produção/Manufatura), TRI (EFD-REINF), TGA (Agronegócio) e TSE (Serasa) | `references/tabelas-tpr-tri-tga.md` |
+| Ligações lógicas TDDLIG + instâncias TDDINS + TDDLGC (entityNames para JapeFactory) | `references/tabelas-ligacoes.md` |
 | Folha de Pagamento e RH (TFPFUN, TFPFOL, TFPCAR, TFPDEP, TFPFER, TFPPON...) | `references/tabelas-tfp.md` |
