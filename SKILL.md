@@ -236,6 +236,36 @@ ecossistema devem consultá-la sempre que precisarem de:
 
 ---
 
+## Armadilhas Comuns
+
+### Coluna física ≠ campo do dicionário da instância (EntityName)
+
+Uma coluna existir na tabela (visível em `describe_table` / `TDDCAM` da tabela) **não** garante que
+ela esteja exposta como campo do **dicionário de uma instância** (EntityName). Cargas via
+`CRUDServiceProvider.loadRecords`, `MetadataProvider` e metadados só enxergam os campos do
+dicionário da instância, não as colunas físicas cruas.
+
+Pedir um campo que é coluna física mas **não** é campo do DD da instância (ex.: `TGFITE.PESO`
+na entidade `ItemNota`) falha com `CORE_E04064 "Descritor do campo inválido"`.
+
+> Para esses casos, use **SQL nativo num Service backend** em vez de carga por entidade.
+
+### Validar o EntityName antes de usar
+
+Antes de `JapeFactory.dao("<EntityName>")` ou `instanceName="<EntityName>"`, confirme que a
+instância existe no dicionário (via `search_entities` ou `TDDINS`). EntityName inexistente/placeholder
+passa pelo deploy e estoura **em runtime**:
+
+```
+Não foi encontrado objeto de acesso a dados para este BMP: mge-dwf:<EntityName>
+```
+
+Exemplo real: usaram `ContratoComercializacao` (inexistente) quando a tabela `TCSCON` expõe
+`Contrato`, `ContratoArmazenagemGeral` e `ContradosOrigem`. **A mesma tabela pode ter várias
+instâncias com filtros diferentes** — escolha a correta para o caso de negócio.
+
+---
+
 ## Referências
 
 | Conteúdo | Arquivo |
