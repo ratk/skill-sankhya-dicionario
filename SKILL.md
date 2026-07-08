@@ -231,8 +231,8 @@ ecossistema devem consultá-la sempre que precisarem de:
 - **`sankhya-addon`** — campos de `<nativeTable>`, entityNames, validação de tabelas nativas
 - **`sankhya-modulo-java`** — estrutura de entidades, campos TGFCAB/TGFITE/TGFFIN/TGFPAR
 - **`sankhya-bi`** — validação de campos nas queries SQL dos gadgets antes de gerar XML
-- **`sankhya-analisador-requisitos`** — validação de entidades e campos Sankhya citados no escopo
-- **`gerar-doc-entrega-dev`** — nomes corretos de campos persistidos ao documentar entregas
+- **`sankhya-estimativa-planejador`** — validação de entidades e campos Sankhya citados no escopo
+- **`sankhya-doc-entrega`** — nomes corretos de campos persistidos ao documentar entregas
 
 ---
 
